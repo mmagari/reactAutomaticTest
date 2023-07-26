@@ -2,21 +2,32 @@ import PropTypes from 'prop-types';
 import { convertUSDToPLN } from './../../utils/convertUSDToPLN';
 import { convertPLNToUSD } from './../../utils/convertPLNToUSD';
 import { formatAmountInCurrency } from './../../utils/formatAmountInCurrency';
-import { useMemo } from 'react';
+
 import styles from './ResultBox.module.scss';
 
 const ResultBox = ({ from, to, amount }) => {
+  // Handle negative values and return early with "Wrong value..."
+  if (amount < 0) {
+    return <div className={styles.result} data-testid="result-box">Wrong value...</div>;
+  }
 
-  const convertedAmount = useMemo(() => {
-    if(from === 'USD' && to === 'PLN') return convertUSDToPLN(amount);
-    if(from === 'PLN' && to === 'USD') return convertPLNToUSD(amount);
-    return formatAmountInCurrency(amount, from);
-  }, [from, to, amount]);
+  let formattedAmount;
+  let convertedAmount;
 
-  const formattedAmount = useMemo(() => formatAmountInCurrency(amount, from), [amount, from]);
+  // Calculate formattedAmount based on from currency
+  formattedAmount = formatAmountInCurrency(amount, from);
+
+  // Calculate convertedAmount based on from and to currencies
+  if (from === 'USD' && to === 'PLN') {
+    convertedAmount = convertUSDToPLN(amount);
+  } else if (from === 'PLN' && to === 'USD') {
+    convertedAmount = convertPLNToUSD(amount);
+  } else {
+    convertedAmount = formatAmountInCurrency(amount, from);
+  }
 
   return (
-    <div className={styles.result}>
+    <div data-testid="result-box" className={styles.result}>
       {formattedAmount} = {convertedAmount}
     </div>
   );
